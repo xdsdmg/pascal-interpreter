@@ -6,7 +6,6 @@ mod ast;
 mod error;
 mod global_scope;
 mod interpreter;
-mod lexeme;
 mod lexer;
 mod parser;
 mod token;
@@ -23,13 +22,13 @@ fn main() {
 
     println!("Read code from {}", file_name);
 
-    let code = fs::read_to_string(file_name).expect("Something went wrong reading the file");
+    let code = fs::read_to_string(file_name).expect("Something went wrong when reading the file");
 
     /* Interpreter execute */
     let mut interpreter = match interpreter::Interpreter::new(&code) {
         Ok(interpreter) => interpreter,
         Err(e) => {
-            panic!("New interpreter failed, error: {}", e);
+            panic!("Initialize interpreter failed, error: {}", e);
         }
     };
 

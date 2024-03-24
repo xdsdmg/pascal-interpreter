@@ -1,4 +1,4 @@
-use crate::lexeme::{Type, Value};
+use crate::lexer::lexeme::{Type, Value};
 
 pub enum Keyword {
     Begin,   // "BEGIN"

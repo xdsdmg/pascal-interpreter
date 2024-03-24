@@ -7,16 +7,8 @@ pub struct Interpreter {
 impl Interpreter {
     pub fn new(code: &str) -> Result<Interpreter, Error> {
         let lexer = Lexer::new(code);
-        let parser = match Parser::new(lexer) {
-            Ok(p) => p,
-            Err(e) => return Err(e),
-        };
+        let parser = Parser::new(lexer);
         Ok(Interpreter { parser })
-    }
-
-    #[allow(dead_code)]
-    pub fn print_all_token(&mut self) {
-        self.parser.lexer.print_all_token()
     }
 
     pub fn execute(&mut self) -> Result<(), Error> {
@@ -25,14 +17,14 @@ impl Interpreter {
             Err(e) => return Err(e),
         };
 
-        let result = match root.visit() {
-            Ok(r) => r,
+        match root.visit() {
+            Ok(info) => {
+                if let Some(v) = info.value() {
+                    println!("[interpreter] [execute] result: {}", v);
+                }
+            }
             Err(e) => return Err(e),
         };
-
-        if let Some(r) = result {
-            println!("[execute] result: {}", r);
-        }
 
         global_scope_print();
 

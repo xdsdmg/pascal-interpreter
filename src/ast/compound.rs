@@ -1,4 +1,4 @@
-/// compound.rs implements the AST node of Compound type.
+use super::Info;
 use super::{Node, NodeType};
 use crate::error::Error;
 use std::rc::Rc;
@@ -14,16 +14,16 @@ impl Compound {
 }
 
 impl Node for Compound {
-    fn get_type(&self) -> NodeType {
+    fn r#type(&self) -> NodeType {
         NodeType::Compound
     }
 
-    fn visit(&self) -> Result<Option<String>, Error> {
+    fn visit(&self) -> Result<Info, Error> {
         for c in self.children.iter() {
             if let Err(e) = c.visit() {
                 return Err(e);
             }
         }
-        Ok(None)
+        Ok(Info::new(None, NodeType::Compound, None))
     }
 }

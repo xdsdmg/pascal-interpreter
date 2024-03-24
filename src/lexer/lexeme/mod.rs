@@ -1,5 +1,5 @@
-/// lexeme mod implements the lexeme used by lexer.
 use std::fmt::Display;
+
 pub mod char;
 pub mod id;
 pub mod keyword;

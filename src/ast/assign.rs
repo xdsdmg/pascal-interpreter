@@ -1,35 +1,47 @@
-/// assign.rs implements the AST node of Assign type.
-use super::{Node, NodeType};
-use crate::{error::Error, global_scope::global_scope_set, token::Token};
+use super::{Info, Node, NodeType};
+use crate::{
+    error::Error,
+    global_scope::{global_scope_set, Identifier},
+};
 use std::rc::Rc;
 
 pub struct Assign {
     left: String,
-    token: Token,
     right: Rc<dyn Node>,
 }
 
 impl Assign {
-    pub fn new(left: &str, token: &Token, right: Rc<dyn Node>) -> Assign {
+    pub fn new(left: &str, right: Rc<dyn Node>) -> Assign {
         Assign {
             left: left.to_string(),
-            token: token.clone(),
             right,
         }
     }
 }
 
 impl Node for Assign {
-    fn get_type(&self) -> NodeType {
+    fn r#type(&self) -> NodeType {
         NodeType::Assign
     }
 
-    fn visit(&self) -> Result<Option<String>, Error> {
+    fn visit(&self) -> Result<Info, Error> {
         match self.right.visit() {
-            Ok(v) => global_scope_set(&self.left, &v.unwrap_or(String::from(""))),
+            Ok(info) => match info.value() {
+                Some(v) => {
+                    let identifier = Identifier::new(&v.r#type, Some(v.value));
+                    global_scope_set(&self.left, &identifier);
+                }
+                None => {
+                    println!(
+                        "[visit] [{}] error occurred, value not found in info",
+                        self.r#type().as_str()
+                    );
+                    return Err(Error::InvalidSyntax);
+                }
+            },
             Err(e) => return Err(e),
         };
 
-        Ok(None)
+        Ok(Info::new(None, NodeType::Assign, None))
     }
 }

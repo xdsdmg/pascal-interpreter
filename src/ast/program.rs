@@ -1,5 +1,7 @@
 use super::block::Block;
+use super::{Info, NodeType};
 use crate::ast::Node;
+use crate::error::Error;
 
 pub struct Program {
     name: String,
@@ -15,4 +17,16 @@ impl Program {
     }
 }
 
-impl Node for Program {}
+impl Node for Program {
+    fn r#type(&self) -> NodeType {
+        NodeType::Program
+    }
+
+    fn visit(&self) -> Result<Info, Error> {
+        let val = match self.block.visit() {
+            Ok(info) => info.value,
+            Err(e) => return Err(e),
+        };
+        Ok(Info::new(Some(self.name.clone()), self.r#type(), val))
+    }
+}

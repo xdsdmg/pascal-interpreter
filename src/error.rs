@@ -1,4 +1,3 @@
-/// error mod implements the HTTP error.
 use core::fmt;
 use std::error;
 
@@ -23,10 +22,6 @@ impl fmt::Display for Error {
 }
 
 impl Error {
-    pub fn to_string(&self) -> String {
-        format!("{}", self)
-    }
-
     pub fn as_str(&self) -> &'static str {
         match self {
             Error::InvalidSyntax => "invalid syntax",

@@ -1,28 +1,29 @@
-use crate::lexeme::{Type, Value};
+use crate::lexer::lexeme::{Type, Value};
 
+#[derive(PartialEq)]
 pub enum NumberType {
-    Int,
+    Integer,
     Real,
 }
 
 impl Type for NumberType {
     fn r#type(&self) -> &'static str {
         match self {
-            NumberType::Int => "int",
-            NumberType::Real => "real",
+            NumberType::Integer => "INTEGER",
+            NumberType::Real => "REAL",
         }
     }
 }
 
 pub enum Number {
-    Int(String),
+    Integer(String),
     Real(String),
 }
 
 impl Type for Number {
     fn r#type(&self) -> &'static str {
         match self {
-            Number::Int(_) => NumberType::Int.r#type(),
+            Number::Integer(_) => NumberType::Integer.r#type(),
             Number::Real(_) => NumberType::Real.r#type(),
         }
     }
@@ -31,10 +32,9 @@ impl Type for Number {
 impl Value for Number {
     fn value(&self) -> &str {
         let s = match self {
-            Number::Int(s) => s,
+            Number::Integer(s) => s,
             Number::Real(s) => s,
         };
-
         &s
     }
 }

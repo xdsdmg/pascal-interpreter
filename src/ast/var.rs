@@ -1,35 +1,32 @@
-/// var.rs implements the AST node of Var type.
-use super::{Node, NodeType};
-use crate::{error::Error, global_scope::global_scope_get, token::Token};
+use super::{Info, Node, NodeType, Value};
+use crate::{error::Error, global_scope::global_scope_get};
 
 pub struct Var {
-    token: Token,
     value: String,
-    r#type: String,
 }
 
 impl Var {
-    pub fn new(token: &Token) -> Var {
+    pub fn new(value: &str) -> Var {
         Var {
-            token: Token::new(token.r#type(), token.value()),
-            value: token.value().to_string(),
+            value: value.to_string(),
         }
     }
 }
 
 impl Node for Var {
-    fn get_type(&self) -> NodeType {
+    fn r#type(&self) -> NodeType {
         NodeType::Var
     }
 
-    fn visit(&self) -> Result<Option<String>, Error> {
-        match global_scope_get(&self.value) {
-            Some(v) => Ok(Some(v.clone())),
-            None => Err(Error::VarNotFound),
-        }
-    }
+    fn visit(&self) -> Result<Info, Error> {
+        let value: Option<Value> = match global_scope_get(&self.value) {
+            Some(identifier) => Some(Value::new(
+                &identifier.value().unwrap_or(String::from("")),
+                identifier.r#type(),
+            )),
+            None => None,
+        };
 
-    fn optional(&self) -> String {
-        self.value.clone()
+        Ok(Info::new(Some(self.value.clone()), NodeType::Var, value))
     }
 }

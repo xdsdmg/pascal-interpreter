@@ -1,9 +1,19 @@
-/// token.rs implements the model of token used by interpreter.
+use std::fmt::{self, Display};
 
 #[derive(Debug)]
 pub struct Token {
     r#type: String,
     value: String,
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{{type: \"{}\", value: \"{}\"}}",
+            &self.r#type, &self.value
+        )
+    }
 }
 
 impl Token {
@@ -14,6 +24,7 @@ impl Token {
         }
     }
 
+    #[allow(dead_code)]
     pub fn clone(&self) -> Token {
         Token::new(&self.r#type, &self.value)
     }
