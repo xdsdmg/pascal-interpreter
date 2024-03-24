@@ -1,4 +1,3 @@
-/// no_op.rs implements the AST node of NoOp type.
 use super::{Info, NodeType};
 use crate::{ast::Node, error::Error};
 
