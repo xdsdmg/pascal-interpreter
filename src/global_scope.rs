@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     fmt::{self, Display},
+    rc::Rc,
     sync::{Mutex, OnceLock},
 };
 
@@ -41,6 +42,23 @@ impl Display for Identifier {
             self.r#type,
             self.value().unwrap_or(String::from(""))
         )
+    }
+}
+
+pub struct Scope {
+    symbol_table: HashMap<String, Identifier>,
+    parent_scope: Option<Rc<Scope>>,
+}
+
+impl Scope {
+    pub fn new(
+        symbol_table: HashMap<String, Identifier>,
+        parent_scope: Option<Rc<Scope>>,
+    ) -> Scope {
+        Scope {
+            symbol_table,
+            parent_scope,
+        }
     }
 }
 
