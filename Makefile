@@ -1,8 +1,10 @@
+TEST_CODE = ./test-code/code-3.pas
+
 test-lexer:
-	cargo test test_lexer -- --nocapture
+	cargo test test_lexer -- --nocapture -- $(TEST_CODE)
 
 test-parser:
-	RUST_BACKTRACE=1 cargo test test_parser -- --nocapture
+	RUST_BACKTRACE=1 cargo test test_parser -- --nocapture -- $(TEST_CODE)
 
-test:
-	export RUST_BACKTRACE=1; cargo run ./code.pas
+test-interpreter:
+	export RUST_BACKTRACE=1; cargo run $(TEST_CODE)

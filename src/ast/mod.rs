@@ -5,8 +5,10 @@ pub mod assign;
 pub mod bin_op;
 pub mod block;
 pub mod compound;
+pub mod declaration;
 pub mod integer;
 pub mod no_op;
+pub mod procedure;
 pub mod program;
 pub mod real;
 pub mod unary_op;
@@ -26,6 +28,7 @@ pub enum NodeType {
     Program,
     Block,
     VarDecl,
+    Declaration,
 }
 
 impl NodeType {
@@ -43,6 +46,7 @@ impl NodeType {
             NodeType::Program => "Program",
             NodeType::Block => "Block",
             NodeType::VarDecl => "Variable Declaration",
+            NodeType::Declaration => "Declaration",
         }
     }
 }

@@ -1,10 +1,11 @@
 use crate::lexer::lexeme::{Type, Value};
 
 pub enum Keyword {
-    Begin,   // "BEGIN"
-    End,     // "END"
-    Program, // "PROGRAM"
-    Var,     // "VAR"
+    Begin,     // "BEGIN"
+    End,       // "END"
+    Program,   // "PROGRAM"
+    Var,       // "VAR"
+    Procedure, // "PROCEDURE"
 }
 
 impl Type for Keyword {
@@ -14,6 +15,7 @@ impl Type for Keyword {
             Keyword::End => "reserved keyword END",
             Keyword::Program => "reserved keyword PROGRAM",
             Keyword::Var => "reserved keyword VAR",
+            Keyword::Procedure => "reserved keyword PROCEDURE",
         }
     }
 }
@@ -25,6 +27,7 @@ impl Value for Keyword {
             Keyword::End => "END",
             Keyword::Program => "PROGRAM",
             Keyword::Var => "VAR",
+            Keyword::Procedure => "PROCEDURE",
         }
     }
 }

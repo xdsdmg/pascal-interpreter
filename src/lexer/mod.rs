@@ -4,7 +4,7 @@ use crate::{error::Error, utils};
 use lexeme::{char::Char, id::ID, keyword::Keyword, number::Number, op::Op, Type, Value};
 
 pub mod lexeme;
-mod test;
+mod tests;
 
 #[derive(Debug)]
 pub struct Lexer {
@@ -182,14 +182,20 @@ impl Lexer {
             self.advance();
         }
 
-        for k in [Keyword::Begin, Keyword::End, Keyword::Program, Keyword::Var] {
-            if k.equal_value(&val.to_ascii_uppercase()) {
+        for k in [
+            Keyword::Begin,
+            Keyword::End,
+            Keyword::Program,
+            Keyword::Var,
+            Keyword::Procedure,
+        ] {
+            if k.equal_value(&val.to_uppercase()) {
                 return Token::new(k.r#type(), k.value());
             }
         }
 
         for t in [NumberType::Integer, NumberType::Real] {
-            if t.equal_type(&val) {
+            if t.equal_type(&val.to_uppercase()) {
                 return Token::new(t.r#type(), t.r#type());
             }
         }

@@ -17,7 +17,10 @@ fn main() {
     args.next();
     let file_name = match args.next() {
         Some(f) => f,
-        None => panic!("{}", Error::FileNotFound),
+        None => panic!(
+            "{}, usage: ./pascal-interpreter ./code.pas", // TODO: need op
+            Error::FileNotFound
+        ),
     };
 
     println!("Read code from {}", file_name);

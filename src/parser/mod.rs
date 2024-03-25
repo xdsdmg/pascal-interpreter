@@ -1,4 +1,6 @@
 use crate::ast::block::Block;
+use crate::ast::declaration::Declaration;
+use crate::ast::procedure::Procedure;
 use crate::ast::var_decl::VarDecl;
 use crate::ast::{
     assign::Assign, bin_op::BinOp, compound::Compound, integer::Integer, no_op::NoOp,
@@ -13,7 +15,7 @@ use crate::token::Token;
 use std::rc::Rc;
 use std::time::SystemTime;
 
-mod test;
+mod tests;
 
 #[derive(Debug)]
 pub struct Parser {
@@ -82,7 +84,7 @@ impl Parser {
     }
 
     /// BNF:
-    /// program: ((PROGRAM variable SEMI) | empty) block DOT
+    /// program: (PROGRAM id SEMI)? block DOT
     fn program(&mut self) -> Result<Rc<dyn Node>, Error> {
         let mut name = String::from("");
 
@@ -90,7 +92,7 @@ impl Parser {
             /* PROGRAM */
             self.eat(Keyword::Program.r#type());
 
-            /* variable */
+            /* id */
             name = match self.variable().visit() {
                 Ok(info) => match info.name() {
                     Some(name) => name,
@@ -122,10 +124,73 @@ impl Parser {
     }
 
     /// BNF:
+    /// procedure: PROCEDURE id (LPAREN formal_parameter_list RPAREN)? SEMI block SEMI
+    fn procedure(&mut self) -> Result<Procedure, Error> {
+        self.eat(Keyword::Procedure.r#type());
+
+        let name = match self.variable().visit() {
+            Ok(info) => match info.name() {
+                Some(name) => name,
+                None => {
+                    println!(
+                        "[parser] [procedure] variable's name not found, current token: {}",
+                        self.current_token
+                    );
+                    return Err(Error::VarNotFound);
+                }
+            },
+            Err(e) => return Err(e),
+        };
+
+        let mut var_decl_list: Vec<Rc<VarDecl>> = Vec::new();
+        if Char::LeftParen.equal_type(self.current_token.r#type()) {
+            self.eat(Char::LeftParen.r#type());
+            match self.formal_parameter_list() {
+                Ok(vds) => vds.iter().for_each(|vd| var_decl_list.push(vd.clone())),
+                Err(e) => return Err(e),
+            };
+            self.eat(Char::RightParen.r#type());
+        }
+
+        self.eat(Char::Semi.r#type());
+        let block = match self.block() {
+            Ok(block) => block,
+            Err(e) => return Err(e),
+        };
+        self.eat(Char::Semi.r#type());
+
+        Ok(Procedure::new(&name, var_decl_list, block))
+    }
+
+    /// BNF:
+    /// formal_parameter_list: variable_declaration
+    ///                      | variable_declaration SEMI formal_parameter_list
+    fn formal_parameter_list(&mut self) -> Result<Vec<Rc<VarDecl>>, Error> {
+        let mut var_decls: Vec<Rc<VarDecl>> = Vec::new();
+
+        match self.variable_declaration() {
+            Ok(var_decl) => var_decls.push(Rc::new(var_decl)),
+            Err(e) => return Err(e),
+        };
+
+        if !Char::Semi.equal_type(self.current_token.r#type()) {
+            return Ok(var_decls);
+        }
+
+        self.eat(Char::Semi.r#type());
+        match self.formal_parameter_list() {
+            Ok(vds) => vds.iter().for_each(|vd| var_decls.push(vd.clone())),
+            Err(e) => return Err(e),
+        }
+
+        return Ok(var_decls);
+    }
+
+    /// BNF:
     /// block: declarations compound_statement
     fn block(&mut self) -> Result<Block, Error> {
-        let var_decls = match self.declarations() {
-            Ok(var_decls) => var_decls,
+        let declaration = match self.declarations() {
+            Ok(d) => d,
             Err(e) => return Err(e),
         };
 
@@ -134,31 +199,39 @@ impl Parser {
             Err(e) => return Err(e),
         };
 
-        Ok(Block::new(var_decls, cs))
+        Ok(Block::new(declaration, cs))
     }
 
     /// BNF:
-    /// declarations: VAR (variable_declaration SEMI)+
+    /// declarations: (VAR (variable_declaration SEMI)+)* (procedure)*
     ///             | empty
-    fn declarations(&mut self) -> Result<Vec<Rc<VarDecl>>, Error> {
-        let mut var_decls: Vec<Rc<VarDecl>> = Vec::new();
+    fn declarations(&mut self) -> Result<Declaration, Error> {
+        let mut declaration = Declaration::new(Vec::new(), Vec::new());
 
-        if Keyword::Var.equal_type(self.current_token.r#type()) {
-            self.eat(Keyword::Var.r#type());
-        } else {
-            return Ok(var_decls);
+        if !Keyword::Var.equal_type(self.current_token.r#type()) {
+            return Ok(declaration);
         }
 
-        while self.current_token.r#type() == ID {
-            let var_decl = match self.variable_declaration() {
-                Ok(var_decl) => var_decl,
+        while Keyword::Var.equal_type(self.current_token.r#type()) {
+            self.eat(Keyword::Var.r#type());
+
+            while self.current_token.r#type() == ID {
+                match self.variable_declaration() {
+                    Ok(vd) => declaration.var_decl_list_push(Rc::new(vd)),
+                    Err(e) => return Err(e),
+                };
+                self.eat(Char::Semi.r#type());
+            }
+        }
+
+        while Keyword::Procedure.equal_type(self.current_token.r#type()) {
+            match self.procedure() {
+                Ok(p) => declaration.procedure_list_push(Rc::new(p)),
                 Err(e) => return Err(e),
             };
-            var_decls.push(Rc::new(var_decl));
-            self.eat(Char::Semi.r#type());
         }
 
-        Ok(var_decls)
+        Ok(declaration)
     }
 
     /// BNF:
