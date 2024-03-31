@@ -1,8 +1,10 @@
 use super::{Info, Node, NodeType, Value};
+use crate::global_scope::Scope;
 use crate::{
     error::Error,
     lexer::lexeme::{number::NumberType, Type},
 };
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Integer {
     value: i32,
@@ -19,7 +21,7 @@ impl Node for Integer {
         NodeType::Integer
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Ok(Info::new(
             None,
             NodeType::Integer,

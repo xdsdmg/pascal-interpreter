@@ -1,10 +1,11 @@
 use super::{Info, Node, NodeType, Value};
 use crate::error::Error;
+use crate::global_scope::Scope;
 use crate::lexer::lexeme::number::NumberType;
 use crate::lexer::lexeme::{op::Op, Type};
 use std::ops::Neg;
-use std::rc::Rc;
 use std::str::FromStr;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct UnaryOp {
     r#type: String, // add or sub
@@ -50,8 +51,8 @@ impl Node for UnaryOp {
         NodeType::UnaryOp
     }
 
-    fn visit(&self) -> Result<Info, Error> {
-        let val = match self.node.visit() {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+        let val = match self.node.visit(scope.clone()) {
             Ok(info) => match info.value {
                 Some(val) => val,
                 None => {

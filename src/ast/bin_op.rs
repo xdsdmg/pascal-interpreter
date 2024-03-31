@@ -1,11 +1,12 @@
 use super::{Info, Node, NodeType, Value};
 use crate::error::Error;
+use crate::global_scope::Scope;
 use crate::lexer::lexeme::number::NumberType;
 use crate::lexer::lexeme::{op::Op, Type};
 use crate::token::Token;
 use std::ops::{Add, Div, Mul, Sub};
-use std::rc::Rc;
 use std::str::FromStr;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct BinOp {
     left: Rc<dyn Node>,
@@ -63,10 +64,10 @@ impl Node for BinOp {
         NodeType::BinOp
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         let mut vals: Vec<Value> = Vec::new();
         for n in [self.left.clone(), self.right.clone()] {
-            match n.visit() {
+            match n.visit(scope.clone()) {
                 Ok(info) => match info.value() {
                     Some(v) => vals.push(v),
                     None => {

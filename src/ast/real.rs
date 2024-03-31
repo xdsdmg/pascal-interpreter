@@ -1,7 +1,9 @@
 use super::{Info, Node, NodeType, Value};
 use crate::error::Error;
+use crate::global_scope::Scope;
 use crate::lexer::lexeme::number::NumberType;
 use crate::lexer::lexeme::Type;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Real {
     value: f32,
@@ -18,7 +20,7 @@ impl Node for Real {
         NodeType::Real
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Ok(Info::new(
             None,
             NodeType::Real,

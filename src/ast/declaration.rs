@@ -1,6 +1,7 @@
 use super::{procedure::Procedure, var_decl::VarDecl, Info, Node, NodeType};
 use crate::error::Error;
-use std::rc::Rc;
+use crate::global_scope::Scope;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Declaration {
     var_decl_list: Vec<Rc<VarDecl>>,
@@ -29,10 +30,12 @@ impl Node for Declaration {
         NodeType::Declaration
     }
 
-    fn visit(&self) -> Result<Info, Error> {
-        self.var_decl_list.iter().for_each(|vd| {
-            let _ = vd.visit();
-        });
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+        for vd in self.var_decl_list.iter() {
+            if let Err(e) = vd.visit(scope.clone()) {
+                return Err(e);
+            }
+        }
         Ok(Info::new(None, self.r#type(), None))
     }
 }

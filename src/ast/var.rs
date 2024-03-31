@@ -1,14 +1,16 @@
 use super::{Info, Node, NodeType, Value};
+use crate::global_scope::Scope;
 use crate::{error::Error, global_scope::global_scope_get};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Var {
-    value: String,
+    name: String,
 }
 
 impl Var {
-    pub fn new(value: &str) -> Var {
+    pub fn new(name: &str) -> Var {
         Var {
-            value: value.to_string(),
+            name: name.to_string(),
         }
     }
 }
@@ -18,8 +20,12 @@ impl Node for Var {
         NodeType::Var
     }
 
-    fn visit(&self) -> Result<Info, Error> {
-        let value: Option<Value> = match global_scope_get(&self.value) {
+    fn name(&self) -> Result<Option<String>, Error> {
+        return Ok(Some(self.name.clone()));
+    }
+
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+        let value: Option<Value> = match scope.borrow().get(&self.name) {
             Some(identifier) => Some(Value::new(
                 &identifier.value().unwrap_or(String::from("")),
                 identifier.r#type(),
@@ -27,6 +33,6 @@ impl Node for Var {
             None => None,
         };
 
-        Ok(Info::new(Some(self.value.clone()), NodeType::Var, value))
+        Ok(Info::new(Some(self.name.clone()), NodeType::Var, value))
     }
 }

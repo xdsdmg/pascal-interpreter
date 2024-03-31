@@ -1,9 +1,13 @@
 use std::{
+    cell::RefCell,
     collections::HashMap,
     fmt::{self, Display},
     rc::Rc,
     sync::{Mutex, OnceLock},
 };
+use crate::error::Error;
+use crate::lexer::lexeme::keyword::Keyword;
+use crate::lexer::lexeme::{Type, Value};
 
 pub struct Identifier {
     r#type: String,
@@ -46,18 +50,75 @@ impl Display for Identifier {
 }
 
 pub struct Scope {
+    // TODO: how about setting this to &str?
+    name: String,
     symbol_table: HashMap<String, Identifier>,
-    parent_scope: Option<Rc<Scope>>,
+    parent: Option<Rc<RefCell<Scope>>>,
+    level: u32,
 }
 
 impl Scope {
-    pub fn new(
-        symbol_table: HashMap<String, Identifier>,
-        parent_scope: Option<Rc<Scope>>,
-    ) -> Scope {
+    pub fn new(name: &str, parent: Option<Rc<RefCell<Scope>>>, level: u32) -> Scope {
+        /* Initialize symbol table */
+        let mut symbol_table = HashMap::new();
+        for kw in [
+            Keyword::Begin,
+            Keyword::End,
+            Keyword::Var,
+            Keyword::Program,
+            Keyword::Procedure,
+        ] {
+            symbol_table.insert(kw.value().to_string(), Identifier::new(kw.r#type(), None));
+        }
+
         Scope {
+            name: name.to_string(),
             symbol_table,
-            parent_scope,
+            parent,
+            level,
+        }
+    }
+
+    // TODO: op '&'
+    pub fn set(&mut self, key: &str, id: &Identifier) -> Result<(), Error> {
+        if let Some(_) = self.symbol_table.get(key) {
+            return Err(Error::VarRedeclared);
+        }
+
+        self.symbol_table.insert(key.to_string(), id.clone());
+
+        Ok(())
+    }
+
+    pub fn parent(&self) -> Option<Rc<RefCell<Scope>>> {
+        self.parent.clone()
+    }
+
+    pub fn find_in_cur_scope(&self, key: &str) -> Option<Identifier> {
+        match self.symbol_table.get(key) {
+            Some(id) => Some(id.clone()),
+            None => None,
+        }
+    }
+
+    pub fn get(&self, key: &str) -> Option<Identifier> {
+        if let Some(id) = self.find_in_cur_scope(key) {
+            return Some(id.clone());
+        }
+        match self.parent() {
+            Some(s) => s.borrow().get(key),
+            None => None,
+        }
+    }
+
+    pub fn level(&self) -> u32 {
+        self.level
+    }
+
+    pub fn print(&self) {
+        println!("scope: {}, level: {}\nsymbol table:", self.name, self.level);
+        for (k, v) in self.symbol_table.iter() {
+            println!("key: {}, value: {}", k, v);
         }
     }
 }

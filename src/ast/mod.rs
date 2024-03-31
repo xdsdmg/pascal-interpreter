@@ -1,5 +1,6 @@
-use crate::error::Error;
+use crate::{error::Error, global_scope::Scope};
 use std::fmt::{self, Display};
+use std::{cell::RefCell, rc::Rc};
 
 pub mod assign;
 pub mod bin_op;
@@ -85,7 +86,11 @@ impl Display for Value {
 }
 
 impl Info {
-    pub fn new(name: Option<String>, r#type: NodeType, value: Option<Value>) -> Info {
+    pub fn new(
+        name: Option<String>,
+        r#type: NodeType,
+        value: Option<Value>,
+    ) -> Info {
         Info {
             name,
             r#type,
@@ -110,7 +115,11 @@ pub trait Node {
         NodeType::Unknown
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn name(&self) -> Result<Option<String>, Error> {
+        Err(Error::InvalidSyntax)
+    }
+
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Err(Error::InvalidSyntax)
     }
 }

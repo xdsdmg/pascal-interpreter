@@ -1,5 +1,7 @@
 use super::{Info, NodeType};
+use crate::global_scope::Scope;
 use crate::{ast::Node, error::Error};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct NoOp {}
 
@@ -14,7 +16,7 @@ impl Node for NoOp {
         NodeType::NoOp
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Ok(Info::new(None, NodeType::NoOp, None))
     }
 }

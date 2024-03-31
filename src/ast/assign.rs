@@ -1,9 +1,9 @@
 use super::{Info, Node, NodeType};
 use crate::{
     error::Error,
-    global_scope::{global_scope_set, Identifier},
+    global_scope::{Identifier, Scope},
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Assign {
     left: String,
@@ -24,12 +24,14 @@ impl Node for Assign {
         NodeType::Assign
     }
 
-    fn visit(&self) -> Result<Info, Error> {
-        match self.right.visit() {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+        match self.right.visit(scope.clone()) {
             Ok(info) => match info.value() {
                 Some(v) => {
                     let identifier = Identifier::new(&v.r#type, Some(v.value));
-                    global_scope_set(&self.left, &identifier);
+                    if let Err(e) = scope.borrow_mut().set(&self.left, &identifier) {
+                        return Err(e);
+                    }
                 }
                 None => {
                     println!(

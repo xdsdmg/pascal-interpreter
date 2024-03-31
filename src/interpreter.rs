@@ -1,4 +1,10 @@
-use crate::{error::Error, global_scope::global_scope_print, lexer::Lexer, parser::Parser};
+use crate::{
+    error::Error,
+    global_scope::{global_scope_print, Scope},
+    lexer::Lexer,
+    parser::Parser,
+};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Interpreter {
     pub parser: Parser,
@@ -17,7 +23,8 @@ impl Interpreter {
             Err(e) => return Err(e),
         };
 
-        match root.visit() {
+        let scope = Rc::new(RefCell::new(Scope::new("base", None, 0)));
+        match root.visit(scope) {
             Ok(info) => {
                 if let Some(v) = info.value() {
                     println!("[interpreter] [execute] result: {}", v);

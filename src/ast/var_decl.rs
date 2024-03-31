@@ -1,6 +1,7 @@
 use super::{Info, Node, NodeType, Value};
 use crate::error::Error;
-use crate::global_scope::{self, Identifier};
+use crate::global_scope::{Identifier, Scope};
+use std::{cell::RefCell, rc::Rc};
 
 pub struct VarDecl {
     ids: Vec<String>,
@@ -21,10 +22,12 @@ impl Node for VarDecl {
         NodeType::VarDecl
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         for key in self.ids.iter() {
             let identifier = Identifier::new(&self.r#type, None);
-            global_scope::global_scope_set(&key, &identifier);
+            if let Err(e) = scope.borrow_mut().set(key, &identifier) {
+                return Err(e);
+            }
         }
 
         Ok(Info::new(

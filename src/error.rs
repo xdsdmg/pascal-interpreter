@@ -7,6 +7,7 @@ pub enum Error {
     InvalidSyntax,
     VarNotFound,
     FileNotFound,
+    VarRedeclared,
 }
 
 impl error::Error for Error {}
@@ -17,6 +18,7 @@ impl fmt::Display for Error {
             Error::InvalidSyntax => write!(f, "invalid syntax"),
             Error::VarNotFound => write!(f, "variable not found"),
             Error::FileNotFound => write!(f, "file not found"),
+            Error::VarRedeclared => write!(f, "variable was redeclared"),
         }
     }
 }
@@ -27,6 +29,7 @@ impl Error {
             Error::InvalidSyntax => "invalid syntax",
             Error::VarNotFound => "variable not found",
             Error::FileNotFound => "file not found",
+            Error::VarRedeclared => "variable was redeclared",
         }
     }
 }

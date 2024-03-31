@@ -93,8 +93,8 @@ impl Parser {
             self.eat(Keyword::Program.r#type());
 
             /* id */
-            name = match self.variable().visit() {
-                Ok(info) => match info.name() {
+            name = match self.variable().name() {
+                Ok(name_op) => match name_op {
                     Some(name) => name,
                     None => {
                         println!(
@@ -128,8 +128,8 @@ impl Parser {
     fn procedure(&mut self) -> Result<Procedure, Error> {
         self.eat(Keyword::Procedure.r#type());
 
-        let name = match self.variable().visit() {
-            Ok(info) => match info.name() {
+        let name = match self.variable().name() {
+            Ok(name_op) => match name_op {
                 Some(name) => name,
                 None => {
                     println!(
@@ -239,8 +239,8 @@ impl Parser {
     fn variable_declaration(&mut self) -> Result<VarDecl, Error> {
         let mut ids: Vec<String> = Vec::new();
 
-        match self.variable().visit() {
-            Ok(info) => match info.name() {
+        match self.variable().name() {
+            Ok(name_op) => match name_op {
                 Some(id) => ids.push(id),
                 None => {
                     println!(
@@ -255,8 +255,8 @@ impl Parser {
 
         while Char::Comma.equal_type(self.current_token.r#type()) {
             self.eat(Char::Comma.r#type());
-            match self.variable().visit() {
-                Ok(info) => match info.name() {
+            match self.variable().name() {
+                Ok(name_op) => match name_op {
                     Some(id) => ids.push(id),
                     None => {
                         println!(
@@ -355,8 +355,8 @@ impl Parser {
             Err(e) => return Err(e),
         };
 
-        let name = match left.visit() {
-            Ok(info) => match info.name() {
+        let name = match left.name() {
+            Ok(name_op) => match name_op {
                 Some(name) => name,
                 None => {
                     println!(

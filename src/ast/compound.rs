@@ -1,7 +1,8 @@
 use super::Info;
 use super::{Node, NodeType};
 use crate::error::Error;
-use std::rc::Rc;
+use crate::global_scope::Scope;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Compound {
     children: Vec<Rc<dyn Node>>,
@@ -18,9 +19,9 @@ impl Node for Compound {
         NodeType::Compound
     }
 
-    fn visit(&self) -> Result<Info, Error> {
+    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         for c in self.children.iter() {
-            if let Err(e) = c.visit() {
+            if let Err(e) = c.visit(scope.clone()) {
                 return Err(e);
             }
         }
