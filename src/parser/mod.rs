@@ -329,7 +329,7 @@ impl Parser {
     }
 
     /// BNF:
-    /// statement: compound_statement | assignment_statement | empty
+    /// statement: compound_statement | assignment_statement | procedure_call_statement | empty
     fn statement(&mut self) -> Result<Rc<dyn Node>, Error> {
         if Keyword::Begin.equal_type(self.current_token.r#type()) {
             match self.compound_statement() {
@@ -341,6 +341,12 @@ impl Parser {
         } else {
             Ok(self.empty())
         }
+    }
+
+    /// BNF:
+    /// procedure_call_statement: id LPAREN (expr (COMMA expr)*)? RPAREN
+    fn procedure_call(&mut self) -> Result<Rc<dyn Node>, Error> {
+        todo!();
     }
 
     /// BNF:

@@ -10,6 +10,7 @@ pub mod declaration;
 pub mod integer;
 pub mod no_op;
 pub mod procedure;
+pub mod procedure_call;
 pub mod program;
 pub mod real;
 pub mod unary_op;
@@ -30,6 +31,7 @@ pub enum NodeType {
     Block,
     VarDecl,
     Declaration,
+    ProcedureCall,
 }
 
 impl NodeType {
@@ -48,6 +50,7 @@ impl NodeType {
             NodeType::Block => "Block",
             NodeType::VarDecl => "Variable Declaration",
             NodeType::Declaration => "Declaration",
+            NodeType::ProcedureCall => "Procedure Call",
         }
     }
 }
@@ -86,11 +89,7 @@ impl Display for Value {
 }
 
 impl Info {
-    pub fn new(
-        name: Option<String>,
-        r#type: NodeType,
-        value: Option<Value>,
-    ) -> Info {
+    pub fn new(name: Option<String>, r#type: NodeType, value: Option<Value>) -> Info {
         Info {
             name,
             r#type,
