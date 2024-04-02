@@ -1,9 +1,32 @@
-use crate::lexer::lexeme::{Type, Value};
+use crate::{
+    error::Error,
+    lexer::lexeme::{Type, Value},
+};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy)]
 pub enum NumberType {
     Integer,
     Real,
+}
+
+impl NumberType {
+    pub fn to_number_type(s: &str) -> Result<NumberType, Error> {
+        if s == NumberType::Integer.r#type() {
+            return Ok(NumberType::Integer);
+        } else if s == NumberType::Real.r#type() {
+            return Ok(NumberType::Real);
+        }
+        return Err(Error::InvalidSyntax);
+    }
+}
+
+impl Clone for NumberType {
+    fn clone(&self) -> Self {
+        match self {
+            NumberType::Integer => NumberType::Integer,
+            NumberType::Real => NumberType::Real,
+        }
+    }
 }
 
 impl Type for NumberType {

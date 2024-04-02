@@ -1,7 +1,8 @@
 use super::{Info, Node, NodeType};
 use crate::{
     error::Error,
-    global_scope::{Identifier, Scope},
+    global_scope::{Identifier, Scope, VariableSymbol},
+    lexer::lexeme::number::NumberType,
 };
 use std::{cell::RefCell, rc::Rc};
 
@@ -28,8 +29,14 @@ impl Node for Assign {
         match self.right.visit(scope.clone()) {
             Ok(info) => match info.value() {
                 Some(v) => {
-                    let identifier = Identifier::new(&v.r#type, Some(v.value));
-                    if let Err(e) = scope.borrow_mut().set(&self.left, &identifier) {
+                    let r#type = match NumberType::to_number_type(&v.r#type) {
+                        Ok(t) => t,
+                        Err(e) => return Err(e),
+                    };
+                    if let Err(e) = scope.borrow_mut().set(
+                        &self.left,
+                        Identifier::Variable(VariableSymbol::new(r#type, Some(v.value))),
+                    ) {
                         return Err(e);
                     }
                 }

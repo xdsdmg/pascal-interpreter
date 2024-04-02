@@ -1,6 +1,7 @@
 use super::{Info, Node, NodeType, Value};
-use crate::global_scope::Scope;
-use crate::{error::Error, global_scope::global_scope_get};
+use crate::error::Error;
+use crate::global_scope::{Identifier, Scope};
+use crate::lexer::lexeme::Type;
 use std::{cell::RefCell, rc::Rc};
 
 pub struct Var {
@@ -25,12 +26,19 @@ impl Node for Var {
     }
 
     fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
-        let value: Option<Value> = match scope.borrow().get(&self.name) {
-            Some(identifier) => Some(Value::new(
-                &identifier.value().unwrap_or(String::from("")),
-                identifier.r#type(),
-            )),
-            None => None,
+        let id = match scope.borrow().get(&self.name) {
+            Some(id) => id,
+            None => return Err(Error::VarNotFound),
+        };
+
+        let vs = match id {
+            Identifier::Variable(vs) => vs,
+            _ => return Err(Error::InvalidSyntax),
+        };
+
+        let value = match vs.value() {
+            Some(v) => Some(Value::new(vs.r#type().r#type(), &v)),
+            None => return Err(Error::InvalidSyntax),
         };
 
         Ok(Info::new(Some(self.name.clone()), NodeType::Var, value))

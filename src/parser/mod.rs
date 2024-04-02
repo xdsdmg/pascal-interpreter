@@ -287,7 +287,7 @@ impl Parser {
             return Err(Error::InvalidSyntax);
         }
 
-        Ok(VarDecl::new(ids, type_spec.r#type()))
+        Ok(VarDecl::new(ids, type_spec))
     }
 
     /// BNF:

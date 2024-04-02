@@ -1,9 +1,4 @@
-use crate::{
-    error::Error,
-    global_scope::{global_scope_print, Scope},
-    lexer::Lexer,
-    parser::Parser,
-};
+use crate::{error::Error, global_scope::Scope, lexer::Lexer, parser::Parser};
 use std::{cell::RefCell, rc::Rc};
 
 pub struct Interpreter {
@@ -32,8 +27,6 @@ impl Interpreter {
             }
             Err(e) => return Err(e),
         };
-
-        global_scope_print();
 
         Ok(())
     }

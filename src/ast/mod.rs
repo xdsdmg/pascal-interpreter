@@ -56,28 +56,30 @@ impl NodeType {
 }
 
 pub struct Info {
+    #[allow(dead_code)]
     name: Option<String>,
+    #[allow(dead_code)]
     r#type: NodeType,
     value: Option<Value>,
 }
 
 pub struct Value {
-    value: String,
     r#type: String,
+    value: String,
 }
 
 impl Value {
-    pub fn new(value: &str, r#type: &str) -> Value {
+    pub fn new(r#type: &str, value: &str) -> Value {
         Value {
-            value: value.to_string(),
             r#type: r#type.to_string(),
+            value: value.to_string(),
         }
     }
 
     pub fn clone(&self) -> Value {
         Value {
-            value: self.value.clone(),
             r#type: self.r#type.clone(),
+            value: self.value.clone(),
         }
     }
 }
