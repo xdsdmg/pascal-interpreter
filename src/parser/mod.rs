@@ -330,6 +330,7 @@ impl Parser {
 
     /// BNF:
     /// statement: compound_statement | assignment_statement | procedure_call_statement | empty
+    /// statement: compound_statement | id ((ASSIGN expr) | (LPAREN (expr (COMMA expr)*)? RPAREN)) | empty
     fn statement(&mut self) -> Result<Rc<dyn Node>, Error> {
         if Keyword::Begin.equal_type(self.current_token.r#type()) {
             match self.compound_statement() {
@@ -350,7 +351,7 @@ impl Parser {
     }
 
     /// BNF:
-    /// assignment_statement: variable ASSIGN expr
+    /// assignment_statement: id ASSIGN expr
     fn assginment_statement(&mut self) -> Result<Rc<dyn Node>, Error> {
         let left = self.variable();
 
