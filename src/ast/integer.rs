@@ -26,8 +26,8 @@ impl Node for Integer {
             None,
             NodeType::Integer,
             Some(Value::new(
-                &self.value.to_string(),
                 NumberType::Integer.r#type(),
+                &self.value.to_string(),
             )),
         ))
     }

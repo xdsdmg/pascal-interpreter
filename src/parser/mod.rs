@@ -1,6 +1,7 @@
 use crate::ast::block::Block;
 use crate::ast::declaration::Declaration;
 use crate::ast::procedure::Procedure;
+use crate::ast::procedure_call::ProcedureCall;
 use crate::ast::var_decl::VarDecl;
 use crate::ast::{
     assign::Assign, bin_op::BinOp, compound::Compound, integer::Integer, no_op::NoOp,
@@ -65,11 +66,9 @@ impl Parser {
 
     /// eat changes parser's current_token to the next token.
     fn eat(&mut self, token_type: &str) {
-        println!("[eat] current token: {}", self.current_token);
-
         if self.current_token.r#type() != token_type {
             panic!(
-                "[parser] [eat] current token {} did not match the required token type {}",
+                "[parser] [eat] current token '{}' did not match the required token type '{}'",
                 self.current_token, token_type,
             );
         }
@@ -159,7 +158,7 @@ impl Parser {
         };
         self.eat(Char::Semi.r#type());
 
-        Ok(Procedure::new(&name, var_decl_list, block))
+        Ok(Procedure::new(&name, var_decl_list, Rc::new(block)))
     }
 
     /// BNF:
@@ -207,10 +206,6 @@ impl Parser {
     ///             | empty
     fn declarations(&mut self) -> Result<Declaration, Error> {
         let mut declaration = Declaration::new(Vec::new(), Vec::new());
-
-        if !Keyword::Var.equal_type(self.current_token.r#type()) {
-            return Ok(declaration);
-        }
 
         while Keyword::Var.equal_type(self.current_token.r#type()) {
             self.eat(Keyword::Var.r#type());
@@ -281,7 +276,7 @@ impl Parser {
             type_spec = NumberType::Real;
         } else {
             println!(
-                "[parser] [variable_declaration] current token {} is invalid, Real or Integer is required",
+                "[parser] [variable_declaration] current token '{}' is invalid, Real or Integer is required",
                 self.current_token
             );
             return Err(Error::InvalidSyntax);
@@ -330,7 +325,6 @@ impl Parser {
 
     /// BNF:
     /// statement: compound_statement | assignment_statement | procedure_call_statement | empty
-    /// statement: compound_statement | id ((ASSIGN expr) | (LPAREN (expr (COMMA expr)*)? RPAREN)) | empty
     fn statement(&mut self) -> Result<Rc<dyn Node>, Error> {
         if Keyword::Begin.equal_type(self.current_token.r#type()) {
             match self.compound_statement() {
@@ -338,7 +332,11 @@ impl Parser {
                 Err(e) => return Err(e),
             }
         } else if self.current_token.r#type() == ID {
-            self.assginment_statement()
+            if Char::LeftParen.equal_value(self.lexer.current_char()) {
+                self.procedure_call()
+            } else {
+                self.assginment_statement()
+            }
         } else {
             Ok(self.empty())
         }
@@ -347,7 +345,47 @@ impl Parser {
     /// BNF:
     /// procedure_call_statement: id LPAREN (expr (COMMA expr)*)? RPAREN
     fn procedure_call(&mut self) -> Result<Rc<dyn Node>, Error> {
-        todo!();
+        let name = match self.variable().name() {
+            Ok(name_op) => match name_op {
+                Some(name) => name,
+                None => {
+                    println!(
+                        "[parser] [procedure_call] variable's name not found, current token: {}",
+                        self.current_token
+                    );
+                    return Err(Error::VarNotFound);
+                }
+            },
+            Err(e) => return Err(e),
+        };
+
+        let mut params: Vec<Rc<dyn Node>> = Vec::new();
+
+        self.eat(Char::LeftParen.r#type());
+
+        if Char::RightParen.equal_type(self.current_token.r#type()) {
+            self.eat(Char::RightParen.r#type());
+        } else {
+            match self.expr() {
+                Ok(p) => params.push(p),
+                Err(e) => return Err(e),
+            };
+
+            loop {
+                if !Char::Comma.equal_type(self.current_token.r#type()) {
+                    break;
+                }
+                self.eat(Char::Comma.r#type());
+                match self.expr() {
+                    Ok(p) => params.push(p),
+                    Err(e) => return Err(e),
+                };
+            }
+
+            self.eat(Char::RightParen.r#type());
+        }
+
+        Ok(Rc::new(ProcedureCall::new(&name, params)))
     }
 
     /// BNF:
@@ -395,14 +433,14 @@ impl Parser {
     }
 
     /// BNF:
-    /// factor: PLUS factor | MINUS factor | INTEGER | LPAREN expr RPAREN | variable
+    /// factor: PLUS factor | MINUS factor | INTEGER | LPAREN expr RPAREN | variable | procedure_call
     fn factor(&mut self) -> Result<Rc<dyn Node>, Error> {
         if NumberType::Integer.equal_type(self.current_token.r#type()) {
             let val = match self.current_token.value().parse::<i32>() {
                 Ok(v) => v,
                 Err(e) => {
                     println!(
-                        "[parser] [factor] parse num {} failed, current token: {}, error: {}",
+                        "[parser] [factor] parse num '{}' failed, current token: {}, error: {}",
                         self.current_token.value(),
                         self.current_token,
                         e,
@@ -417,7 +455,7 @@ impl Parser {
                 Ok(v) => v,
                 Err(e) => {
                     println!(
-                        "[parser] [factor] parse num {} failed, current token: {}, error: {}",
+                        "[parser] [factor] parse num '{}' failed, current token: {}, error: {}",
                         self.current_token.value(),
                         self.current_token,
                         e,
@@ -450,15 +488,22 @@ impl Parser {
                 return Ok(Rc::new(UnaryOp::new(op.r#type(), node)));
             }
             println!(
-                "[parser] [factor] current token {} is invalid, '+' or '-' operation is required",
+                "[parser] [factor] current token '{}' is invalid, '+' or '-' operation is required",
                 self.current_token
             );
             Err(Error::InvalidSyntax)
         } else if self.current_token.r#type() == ID {
-            Ok(self.variable())
+            if !Char::LeftParen.equal_value(self.lexer.current_char()) {
+                Ok(self.variable())
+            } else {
+                match self.procedure_call() {
+                    Ok(n) => Ok(n),
+                    Err(e) => return Err(e),
+                }
+            }
         } else {
             println!(
-                "[parser] [factor] current token {} is invalid",
+                "[parser] [factor] current token '{}' is invalid",
                 self.current_token
             );
             Err(Error::InvalidSyntax)

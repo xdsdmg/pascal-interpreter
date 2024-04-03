@@ -24,6 +24,9 @@ mod tests {
         };
 
         let scope = Rc::new(RefCell::new(Scope::new("base", None, 0)));
-        let _ = root.visit(scope);
+
+        if let Err(e) = root.visit(scope) {
+            println!("[test] test failed, error: {}", e);
+        }
     }
 }

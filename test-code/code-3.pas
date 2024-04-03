@@ -1,12 +1,15 @@
-program Main;
-   var x, y: real;
 
-   procedure Alpha(a : integer);
-   var y : integer;
-   begin
-      x := a + x + y;
-   end;
+Program Main;
 
-begin { Main }
+Var x, y: real;
 
-end.  { Main }
+Procedure Alpha(a : integer);
+
+Var y : integer;
+Begin
+  x := a + x + y;
+End;
+
+Begin { Main }
+
+End.  { Main }

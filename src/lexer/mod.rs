@@ -39,7 +39,7 @@ impl Lexer {
 
             /* Identifier scan */
             if utils::isalnum(&self.current_char()) {
-                return Ok(self._id());
+                return Ok(self.id());
             }
 
             /* Number scan */
@@ -107,7 +107,7 @@ impl Lexer {
         }
     }
 
-    fn current_char(&self) -> char {
+    pub fn current_char(&self) -> char {
         if self.pos >= self.code.len() {
             return Char::EOF.char();
         }
@@ -168,8 +168,8 @@ impl Lexer {
         }
     }
 
-    /// _id handles identifiers and reserved keywords.
-    fn _id(&mut self) -> Token {
+    /// id handles identifiers and reserved keywords.
+    fn id(&mut self) -> Token {
         let mut val = String::from("");
 
         val.push(self.current_char());

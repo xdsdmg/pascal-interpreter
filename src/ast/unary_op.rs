@@ -30,7 +30,7 @@ where
     let num = match val.parse::<T>() {
         Ok(n) => n,
         Err(e) => {
-            println!("[visit] [UnaryOp] parse num {} failed, error: {}", val, e);
+            println!("[visit] [UnaryOp] parse num '{}' failed, error: {}", val, e);
             return Err(Error::InvalidSyntax);
         }
     };
@@ -52,7 +52,7 @@ impl Node for UnaryOp {
     }
 
     fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
-        let val = match self.node.visit(scope.clone()) {
+        let info = match self.node.visit(scope.clone()) {
             Ok(info) => match info.value {
                 Some(val) => val,
                 None => {
@@ -63,23 +63,23 @@ impl Node for UnaryOp {
             Err(e) => return Err(e),
         };
 
-        let val_: Value;
-        if NumberType::Real.equal_type(val.r#type) {
-            let r = match cal::<f32>(&val.value, &self.r#type) {
+        let val: Value;
+        if NumberType::Real.equal_type(info.r#type) {
+            let r = match cal::<f32>(&info.value, &self.r#type) {
                 Ok(r) => r,
                 Err(e) => return Err(e),
             };
 
-            val_ = Value::new(&r.to_string(), NumberType::Real.r#type());
+            val = Value::new(NumberType::Real.r#type(), &r.to_string());
         } else {
-            let r = match cal::<i32>(&val.value, &self.r#type) {
+            let r = match cal::<i32>(&info.value, &self.r#type) {
                 Ok(r) => r,
                 Err(e) => return Err(e),
             };
 
-            val_ = Value::new(&r.to_string(), NumberType::Integer.r#type());
+            val = Value::new(NumberType::Integer.r#type(), &r.to_string());
         }
 
-        Ok(Info::new(None, NodeType::UnaryOp, Some(val_)))
+        Ok(Info::new(None, NodeType::UnaryOp, Some(val)))
     }
 }

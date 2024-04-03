@@ -36,7 +36,7 @@ where
         match n.parse::<T>() {
             Ok(num) => nums.push(num),
             Err(e) => {
-                println!("[visit] [BinOp] parse num {} failed, error: {}", left, e);
+                println!("[visit] [BinOp] parse num '{}' failed, error: {}", left, e);
                 return Err(Error::InvalidSyntax);
             }
         };
@@ -90,13 +90,13 @@ impl Node for BinOp {
                 Ok(r) => r,
                 Err(e) => return Err(e),
             };
-            val = Value::new(&r.to_string(), NumberType::Real.r#type())
+            val = Value::new(NumberType::Real.r#type(), &r.to_string())
         } else {
             let r = match cal::<i32>(&vals[0].value, self.token.r#type(), &vals[1].value) {
                 Ok(r) => r,
                 Err(e) => return Err(e),
             };
-            val = Value::new(&r.to_string(), NumberType::Integer.r#type())
+            val = Value::new(NumberType::Integer.r#type(), &r.to_string())
         }
 
         Ok(Info::new(None, NodeType::BinOp, Some(val)))

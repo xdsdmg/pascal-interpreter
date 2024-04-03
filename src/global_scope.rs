@@ -3,6 +3,7 @@ use crate::error::Error;
 use crate::lexer::lexeme::keyword::Keyword;
 use crate::lexer::lexeme::number::NumberType;
 use crate::lexer::lexeme::{Type, Value};
+use itertools::Itertools;
 use std::{
     cell::RefCell,
     collections::HashMap,
@@ -65,8 +66,11 @@ impl VariableSymbol {
 
 impl Display for VariableSymbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let value = self.value.clone().unwrap_or(String::from("")); // TODO: need op
-        write!(f, "{{type: {}, value: {}}}", self.r#type.r#type(), &value)
+        let value = match &self.value {
+            Some(v) => v,
+            None => "none",
+        };
+        write!(f, "{{type: {}, value: {}}}", self.r#type.r#type(), value)
     }
 }
 
@@ -91,6 +95,10 @@ impl ProcedureSymbol {
             name: name.to_string(),
             procedure,
         }
+    }
+
+    pub fn procedure(&self) -> Rc<Procedure> {
+        self.procedure.clone()
     }
 }
 
@@ -152,7 +160,6 @@ impl Clone for Identifier {
 }
 
 pub struct Scope {
-    // TODO: how about setting this to &str?
     name: String,
     symbol_table: HashMap<String, Identifier>,
     parent: Option<Rc<RefCell<Scope>>>,
@@ -186,7 +193,17 @@ impl Scope {
 
     pub fn set(&mut self, key: &str, id: Identifier) -> Result<(), Error> {
         if let Some(_) = self.symbol_table.get(key) {
-            return Err(Error::VarRedeclared);
+            self.symbol_table.insert(key.to_string(), id);
+            Ok(())
+        } else {
+            println!("[set] variable '{}' is not defined in symbol table", key);
+            Err(Error::VarNotFound)
+        }
+    }
+
+    pub fn define(&mut self, key: &str, id: Identifier) -> Result<(), Error> {
+        if let Some(_) = self.symbol_table.get(key) {
+            return Err(Error::VarRedefined);
         }
 
         self.symbol_table.insert(key.to_string(), id);
@@ -220,9 +237,29 @@ impl Scope {
     }
 
     pub fn print(&self) {
-        println!("scope: {}, level: {}\nsymbol table:", self.name, self.level);
-        for (k, v) in self.symbol_table.iter() {
-            println!("key: {}, value: {}", k, v);
+        println!("====================== SCOPE BEGIN ======================");
+        println!("SCOPE: {}, LEVEL: {}", self.name, self.level);
+        println!("KEYWORD:");
+        for k in self.symbol_table.keys().sorted() {
+            match self.symbol_table[k] {
+                Identifier::Keyword(_) => println!("key: {}, value: {}", k, self.symbol_table[k]),
+                _ => continue,
+            }
         }
+        println!("PROCEDURE:");
+        for k in self.symbol_table.keys().sorted() {
+            match self.symbol_table[k] {
+                Identifier::Procedure(_) => println!("key: {}, value: {}", k, self.symbol_table[k]),
+                _ => continue,
+            }
+        }
+        println!("VARIABLE:");
+        for k in self.symbol_table.keys().sorted() {
+            match self.symbol_table[k] {
+                Identifier::Variable(_) => println!("key: {}, value: {}", k, self.symbol_table[k]),
+                _ => continue,
+            }
+        }
+        println!("======================  SCOPE END  ======================");
     }
 }

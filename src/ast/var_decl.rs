@@ -23,7 +23,7 @@ impl Node for VarDecl {
 
     fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         for key in self.ids.iter() {
-            if let Err(e) = scope.borrow_mut().set(
+            if let Err(e) = scope.borrow_mut().define(
                 key,
                 Identifier::Variable(VariableSymbol::new(self.r#type, None)),
             ) {
@@ -34,7 +34,7 @@ impl Node for VarDecl {
         Ok(Info::new(
             None,
             self.r#type(),
-            Some(Value::new("", self.r#type.r#type())),
+            Some(Value::new(self.r#type.r#type(), &self.ids.join(","))),
         ))
     }
 }

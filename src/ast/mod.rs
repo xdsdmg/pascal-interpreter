@@ -32,6 +32,7 @@ pub enum NodeType {
     VarDecl,
     Declaration,
     ProcedureCall,
+    Procedure,
 }
 
 impl NodeType {
@@ -51,6 +52,7 @@ impl NodeType {
             NodeType::VarDecl => "Variable Declaration",
             NodeType::Declaration => "Declaration",
             NodeType::ProcedureCall => "Procedure Call",
+            NodeType::Procedure => "Procedure",
         }
     }
 }
@@ -82,6 +84,14 @@ impl Value {
             value: self.value.clone(),
         }
     }
+
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+
+    pub fn r#type(&self) -> &str {
+        &self.r#type
+    }
 }
 
 impl Display for Value {
@@ -99,6 +109,7 @@ impl Info {
         }
     }
 
+    #[allow(dead_code)]
     pub fn name(&self) -> Option<String> {
         self.name.clone()
     }
@@ -111,6 +122,31 @@ impl Info {
     }
 }
 
+impl Display for Info {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let name = match &self.name {
+            Some(n) => n.clone(),
+            None => String::from("none"),
+        };
+
+        match &self.value {
+            Some(v) => write!(
+                f,
+                "{{name: {}, type: {}, value: {}}}",
+                name,
+                self.r#type.as_str(),
+                v,
+            ),
+            None => write!(
+                f,
+                "{{name: {}, type: {}, value: none}}",
+                name,
+                self.r#type.as_str(),
+            ),
+        }
+    }
+}
+
 pub trait Node {
     fn r#type(&self) -> NodeType {
         NodeType::Unknown
@@ -120,7 +156,7 @@ pub trait Node {
         Err(Error::InvalidSyntax)
     }
 
-    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+    fn visit(&self, _scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Err(Error::InvalidSyntax)
     }
 }

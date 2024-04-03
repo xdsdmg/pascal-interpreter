@@ -1,22 +1,25 @@
-program Main;
 
-procedure Alpha(a : integer; b : integer);
-var x : integer;
+Program Main;
 
-  procedure Beta(a : integer; b : integer);
-  var x : integer;
-  begin
-      x := a * 10 + b * 2;
-  end;
+Procedure Alpha(a : integer; b : integer);
 
-begin
+Var x : integer;
+
+Procedure Beta(a : integer; b : integer);
+
+Var x : integer;
+
+Begin
+  x := a * 10 + b * 2;
+End;
+
+Begin
   x := (a + b ) * 2;
-
   Beta(5, 10);      { procedure call }
-end;
+End;
 
-begin { Main }
+Begin { Main }
 
   Alpha(3 + 5, 7);  { procedure call }
 
-end.  { Main }
+End.  { Main }

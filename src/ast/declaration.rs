@@ -36,6 +36,13 @@ impl Node for Declaration {
                 return Err(e);
             }
         }
+
+        for p in self.procedure_list.iter() {
+            if let Err(e) = p.visit(scope.clone()) {
+                return Err(e);
+            }
+        }
+
         Ok(Info::new(None, self.r#type(), None))
     }
 }

@@ -20,13 +20,13 @@ impl Node for Real {
         NodeType::Real
     }
 
-    fn visit(&self, scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
+    fn visit(&self, _scope: Rc<RefCell<Scope>>) -> Result<Info, Error> {
         Ok(Info::new(
             None,
             NodeType::Real,
             Some(Value::new(
-                &self.value.to_string(),
                 NumberType::Real.r#type(),
+                &self.value.to_string(),
             )),
         ))
     }

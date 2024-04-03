@@ -1,4 +1,4 @@
-TEST_CODE = ./test-code/code-1.pas
+TEST_CODE = ./test-code/code-4.pas
 
 test-lexer:
 	cargo test test_lexer -- --nocapture -- $(TEST_CODE)
